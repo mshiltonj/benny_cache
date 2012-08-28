@@ -4,8 +4,8 @@ require File.expand_path('../lib/benny_cache/version', __FILE__)
 Gem::Specification.new do |gem|
   gem.authors       = ["Steven Hilton"]
   gem.email         = ["mshiltonj@gmail.com"]
-  gem.description   = %q{TODO: Write a gem description}
-  gem.summary       = %q{TODO: Write a gem summary}
+  gem.description   = %q{A caching library}
+  gem.summary       = %q{A caching library}
   gem.homepage      = ""
 
   gem.files         = `git ls-files`.split($\)

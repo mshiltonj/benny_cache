@@ -2,74 +2,73 @@ module BennyCache
   module Model
 
     def self.included(base)
-      base.include BennyCache::Base
-      base.extend Model::ClassMethods
+      base.instance_eval {
+        include BennyCache::Base
+      }
+
+      base.extend BennyCache::Model::ClassMethods
 
       unless base.class_variable_defined? :@@BENNY_MODEL_INDEXES
         base.class_variable_set(:@@BENNY_MODEL_INDEXES, [])
       end
 
       unless base.class_variable_defined? :@@BENNY_DATA_INDEXES
-        base.class_variable_set(:@@BENEY_DATA_INDEXES, [])
+        base.class_variable_set(:@@BENNY_DATA_INDEXES, [])
       end
 
       if base.respond_to? :after_save
-        base.after_save :benny_model_clear_cache
+        base.after_save :benny_model_cache_delete
       end
 
       if base.respond_to? :after_destroy
-        base.after_destroy :benny_model_clear_cache
+        base.after_destroy :benny_model_cache_delete
       end
 
-      def benny_cache_clear
-        puts "benny_model_clear_cache"
-        ns = self.benny_model_ns
+      def benny_model_cache_delete
+        puts "benny_model_cache_delete"
+        ns = self.class.get_benny_model_ns
         key = "#{ns}/#{self.id}"
         puts "deleting key #{key}"
-        Rails.cache.delete(key)
+
+        BennyCache::Config.store.delete(key)
         self.class.class_variable_get(:@@BENNY_MODEL_INDEXES).each do |idx|
-          key =  "#{ns}/" + idx.gsub(/:(\w+)/) { self.send($1) }
-          Rails.cache.delete(key)
+          key =  "#{ns}/" + idx.to_s.gsub(/:(\w+)/) { self.send($1) }
+          BennyCache::Config.store.delete(key)
         end
       end
 
-      def benny_cache_model(data_key, &block)
-        full_key = self.class.benny_cache_full_key(self.id, data_key)
-        Rails.cache.fetch(full_key, &block)
+      def benny_data_cache(data_index, &block)
+        full_index = self.class.benny_data_cache_full_index(self.id, data_index)
+        BennyCache::Config.store.fetch(full_index, &block)
       end
     end
 
     module ClassMethods
 
-      def benny_data_cache_delete(model_id, data_key)
-        full_key = self.benny_cache_full_key(model_id, data_key)
-        Rails.cache.delete(full_key)
+      def benny_data_cache_delete(model_id, data_index)
+        full_index = self.benny_data_cache_full_index(model_id, data_index)
+        BennyCache::Config.store.delete(full_index)
       end
 
-      def benny_cache_full_data_key(model_id, data_key)
-        raise "undefined cache data key #{data_key}" unless self.class_variable_get(:@@BENNY_MODEL_DATA_KEYS).include?(data_key.to_s)
-        ns = self.benny_model_ns
-        full_key = "#{ns}/#{model_id}/data/#{data_key.to_s}"
+      def benny_data_cache_full_index(model_id, data_index)
+        puts "DATA INDEX: #{data_index}"
+        puts "INDEXES #{self.class_variable_get(:@@BENNY_DATA_INDEXES).inspect}"
+        raise "undefined cache data key '#{data_index}'" unless self.class_variable_get(:@@BENNY_DATA_INDEXES).include?(data_index.to_s)
+        ns = self.get_benny_model_ns
+        full_index = "#{ns}/#{model_id}/data/#{data_index.to_s}"
       end
 
-      def benny_model_key(*options)
-        self.class_variable_set(:@@BENNY_MODEL_INDEXES, options.flatten)
+      def benny_model_index(*options)
+        index_keys = options.map {|idx| idx.is_a?(Array) ? idx.map{ |jdx| "#{jdx.to_s}/:#{jdx.to_s}"}.join("/") : idx }
+        self.class_variable_get(:@@BENNY_MODEL_INDEXES).push(*index_keys)
       end
 
       def benny_data_index(*options)
-        self.class_variable_set(:@@BENNY_DATA_INDEXES, options.flatten)
+        self.class_variable_get(:@@BENNY_DATA_INDEXES).push(*(options.map(&:to_s)))
       end
 
-      def set_benny_model_ns(ns)
-        self.class_variable_set(:@@BENNY_MODEL_NS, ns.to_s)
-      end
-
-      def benny_model_ns
-         self.class_variable_defined?(:@@BENNY_MODEL_NS) ? self.class_variable_get(:@@BENNY_MODEL_NS) : self.to_s
-      end
-
-      def model_cache(options)
-        ns = self.benny_model_ns
+      def benny_model_cache(options)
+        ns = self.get_benny_model_ns
 
         if options.is_a?(Hash)
           key_format = []
@@ -83,13 +82,18 @@ module BennyCache
 
           key_format = key_format.join('/')
 
+          puts "--------"
+          puts self.class_variable_get(:@@BENNY_MODEL_INDEXES).inspect
+          puts key_format.inspect
+          puts "--------"
+
           raise "undefined cache key format #{ns}/#{key_format}" unless self.class_variable_get(:@@BENNY_MODEL_INDEXES).include?(key_format)
 
-          Rails.cache.fetch("#{ns}/#{key}") {
+          BennyCache::Config.store.fetch("#{ns}/#{key}") {
             self.where(options).first
           }
         else # should be a number/id
-          Rails.cache.fetch("#{ns}/#{options}") {
+          BennyCache::Config.store.fetch("#{ns}/#{options}") {
             self.find(options)
           }
         end
