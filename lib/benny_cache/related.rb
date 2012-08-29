@@ -1,34 +1,35 @@
-module Benny
+module BennyCache
   module Related
     def self.included(base)
-      base.include Benny::Base
+      base.send :include, BennyCache::Base
 
-      base.extend Benny::ClassMethods
-      unless(base.class_variable_defined)
-        base.class_variable_set(:@@benny_cache_related, [])
+      base.extend BennyCache::ClassMethods
+      unless(base.class_variable_defined? :@@benny_related_indexes)
+        base.class_variable_set(:@@benny_related_indexes, [])
       end
 
-      if base.respond_to?(:benny_cache_clear_related)
+      if base.respond_to?(:after_save)
         base.after_save :benny_cache_clear_related
       end
 
-      if base.respond_to?(:benny_cache_clear_related)
-        base.after_delete :benny_cache_clear_related
+      if base.respond_to?(:after_destroy)
+        base.after_destroy :benny_cache_clear_related
       end
     end
 
     def benny_cache_clear_related
-      self.class.class_variable_get(:@@benny_cache_related).each do |key|
-        klass, field, data_cache = key.split('/')
-
-        klass.constantize.kwik_e_delete_data_cache(self.send(field), data_cache)
+      self.class.class_variable_get(:@@benny_related_indexes).each do |key|
+        local_field, klass, data_cache = key.split('/')
+        klass.constantize.benny_data_cache_delete(self.send(local_field), data_cache)
       end
     end
   end
 
   module ClassMethods
-    def benny_cache_related(*related_keys)
-      self.class_variable_set(:@@benny_cache_related, related_keys)
+
+    def benny_related_index(*options)
+      index_keys = options.map {|idx| idx.is_a?(Array) ? idx.map{ |jdx| "#{jdx.to_s}/:#{jdx.to_s}"}.join("/") : idx }
+      self.class_variable_get(:@@benny_related_indexes).push(*index_keys)
     end
 
   end
