@@ -14,4 +14,10 @@ Gem::Specification.new do |gem|
   gem.name          = "benny_cache"
   gem.require_paths = ["lib"]
   gem.version       = BennyCache::VERSION
+
+
+  gem.add_development_dependency('rspec')
+  gem.add_development_dependency('mocha')
+  gem.add_development_dependency('ZenTest')
+  gem.add_development_dependency('simplecov')
 end

@@ -47,6 +47,7 @@ module BennyCache
 
       def benny_data_cache_delete(model_id, data_index)
         full_index = self.benny_data_cache_full_index(model_id, data_index)
+        puts "deleting #{full_index}"
         BennyCache::Config.store.delete(full_index)
       end
 
