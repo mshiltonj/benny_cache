@@ -33,6 +33,8 @@ end
 class ModelCacheFake < ARFaker
   include BennyCache::Model
 
+  attr_accessor :id, :other_id
+
   benny_model_index :other_id, [:x, :y]
   benny_data_index :stuff
 
