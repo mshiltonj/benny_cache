@@ -4,9 +4,21 @@ module BennyCache
       base.extend(BennyCache::Base::ClassMethods)
     end
 
-    module InstanceMethods
-
+    def benny_constantize(string)
+      if string.respond_to?(:constantize)
+        # use ActiveSupport directly if possible
+        string.constantize
+      else
+        names = string.split('::')
+        names.shift if names.empty? || names.first.empty?
+        constant = Object
+        names.each do |name|
+          constant = constant.const_get(name)
+        end
+        constant
+      end
     end
+
     
     module ClassMethods
 
@@ -18,6 +30,8 @@ module BennyCache
          ns = self.class_variable_defined?(:@@BENNY_MODEL_NS) ? self.class_variable_get(:@@BENNY_MODEL_NS) : self.to_s
          "Benny/#{ns}"
       end
+
+
     end
   end
 end

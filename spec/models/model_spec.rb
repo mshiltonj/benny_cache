@@ -1,5 +1,4 @@
 require_relative "../spec_helper"
-require_relative "../test_classes"
 
 require 'mocha_standalone'
 
@@ -36,7 +35,24 @@ describe BennyCache::Model do
 
     end
 
-    it "should clear the cache shen saved" do
+    it "should clear the cache when destroyed" do
+      ModelCacheFake.expects(:find).with(1).returns(@model)
+
+      rv = ModelCacheFake.benny_model_cache(1)
+      rv.id.should == 1
+      rv.other_id = 123
+
+      key = 'Benny/ModelCacheFake/1'
+      okey = 'Benny/ModelCacheFake/other_id/123'
+      fkey = 'Benny/ModelCacheFake/x/12/y/36'
+
+      @store.expects(:delete).with(key)
+      @store.expects(:delete).with(okey)
+      @store.expects(:delete).with(fkey)
+      rv.destroy
+    end
+
+    it "should clear the cache when saved" do
 
       ModelCacheFake.expects(:find).with(1).returns(@model)
 
@@ -59,7 +75,7 @@ describe BennyCache::Model do
       arel= Object.new
       ModelCacheFake.expects(:where).with(:x => 12, :y => 36).returns(arel)
       arel.expects(:first).returns(@model)
-      rv = ModelCacheFake.benny_model_cache(:x => 12, :y => 36)
+      ModelCacheFake.benny_model_cache(:x => 12, :y => 36)
     end
 
     it "should fetch data with a yield block" do

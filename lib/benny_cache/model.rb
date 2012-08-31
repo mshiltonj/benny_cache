@@ -53,13 +53,11 @@ module BennyCache
 
       def benny_data_cache_delete(model_id, data_index)
         full_index = self.benny_data_cache_full_index(model_id, data_index)
-        puts "deleting #{full_index}"
+        puts "deleting full index key  #{full_index}"
         BennyCache::Config.store.delete(full_index)
       end
 
       def benny_data_cache_full_index(model_id, data_index)
-        puts "DATA INDEX: #{data_index}"
-        puts "INDEXES #{self.class_variable_get(:@@BENNY_DATA_INDEXES).inspect}"
         raise "undefined cache data key '#{data_index}'" unless self.class_variable_get(:@@BENNY_DATA_INDEXES).include?(data_index.to_s)
         ns = self.get_benny_model_ns
         full_index = "#{ns}/#{model_id}/data/#{data_index.to_s}"

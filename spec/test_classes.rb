@@ -54,7 +54,7 @@ end
 
 class RelatedCacheFake < ARFaker
   include BennyCache::Related
-  benny_related_index "ModelCacheFake/:model_id/stuff"
+  benny_related_index ":model_id/ModelCacheFake/stuff"
 
   attr_accessor :model_id
 

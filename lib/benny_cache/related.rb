@@ -18,15 +18,11 @@ module BennyCache
     end
 
     def benny_cache_clear_related
-      puts "** benny_cache_clear_related"
       self.class.class_variable_get(:@@benny_related_indexes).each do |key|
-        puts self.inspect
-        puts key
-
-
         local_field, klass, data_cache = key.split('/')
         local_field = local_field[1, local_field.length]
-        klass.constantize.benny_data_cache_delete(self.send(local_field), data_cache)
+        const = benny_constantize(klass)
+        const.benny_data_cache_delete(self.send(local_field), data_cache)
       end
     end
   end
