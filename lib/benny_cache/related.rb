@@ -22,7 +22,8 @@ module BennyCache
         local_field, klass, data_cache = key.split('/')
         local_field = local_field[1, local_field.length]
         const = benny_constantize(klass)
-        const.benny_data_cache_delete(self.send(local_field), data_cache)
+        id = self.send(local_field)
+        const.benny_data_cache_delete(id, data_cache) if id
       end
     end
   end
