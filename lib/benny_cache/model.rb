@@ -51,17 +51,45 @@ module BennyCache
 
     module ClassMethods
 
-      def benny_data_cache_delete(model_id, data_index)
+      def benny_data_cache_delete(model_id, data_index) # :nodoc:
         full_index = self.benny_data_cache_full_index(model_id, data_index)
         puts "deleting full index key  #{full_index}"
         BennyCache::Config.store.delete(full_index)
       end
 
-      def benny_data_cache_full_index(model_id, data_index)
+      def benny_data_cache_full_index(model_id, data_index) # :nodoc:
         raise "undefined cache data key '#{data_index}'" unless self.class_variable_get(:@@BENNY_DATA_INDEXES).include?(data_index.to_s)
         ns = self.get_benny_model_ns
         full_index = "#{ns}/#{model_id}/data/#{data_index.to_s}"
       end
+
+      ##
+      # Declares one or more caching indexes for instances of this class.
+      # You do not have to declare an :id index, but if you will be referencing or loading
+      # models by other indexes, declare them here.
+      #
+      # Explicit declarations are needed so BennyCache knows which cache keys to clear
+      # on a relevant change.
+      #
+      # Valid options are symbols of other methods, or for multiple-field indexes, an array
+      # of :symbols
+      #  class Agent
+      #    benny_model_index :user_id
+      #    # internally works like Agent.where(:user_id => user_id ).first when referenced
+      #  end
+      #
+      # or
+      #
+      #  class Location
+      #    benny_model_index [:x, :y]
+      #    # internally works like Locaion.where(:x => x, :y => y ).first when referenced
+      #  end
+      #
+      # You can include many indexes in the declaration:
+      #
+      #  class Foo
+      #    benny_model_index :bar, :baz, [:zip, :zap]
+      #  end
 
       def benny_model_index(*options)
         index_keys = options.map {|idx| idx.is_a?(Array) ? idx.map{ |jdx| "#{jdx.to_s}/:#{jdx.to_s}"}.join("/") : idx }
@@ -72,6 +100,25 @@ module BennyCache
         self.class_variable_get(:@@BENNY_DATA_INDEXES).push(*(options.map(&:to_s)))
       end
 
+      ##
+      # Retrieves a model from the cache. If the model is no in the cache, BennyCache will load it from the database
+      # and store in the cache.
+      #
+      #  agent = Agent.benny_model_cache(1)
+      #
+      # If the agent with id of 1 is not in the cache, it will make an ActiveRecord call to popuplate the cache,
+      # and return the model, like so:
+      #   Agent.find(1)
+      #
+      # If you have declared separate data indexes, you can pass a hash and and BennyCache will use
+      # ActiveRelation#where to populate the hash
+      #
+      #   Agent.benny_model_cache(:user_id => 999)
+      #
+      # To populate cache, BennyCache will call
+      #
+      #  Agent.where(:user_id => 999)
+      #
       def benny_model_cache(options)
         ns = self.get_benny_model_ns
 

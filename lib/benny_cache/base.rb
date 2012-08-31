@@ -1,10 +1,10 @@
 module BennyCache
   module Base
-    def self.included(base)
+    def self.included(base) #:nodoc:
       base.extend(BennyCache::Base::ClassMethods)
     end
 
-    def benny_constantize(string)
+    def benny_constantize(string) #:nodoc:
       if string.respond_to?(:constantize)
         # use ActiveSupport directly if possible
         string.constantize
@@ -26,11 +26,10 @@ module BennyCache
         self.class_variable_set(:@@BENNY_MODEL_NS, ns.to_s)
       end
 
-      def get_benny_model_ns
+      def get_benny_model_ns #:nodoc:
          ns = self.class_variable_defined?(:@@BENNY_MODEL_NS) ? self.class_variable_get(:@@BENNY_MODEL_NS) : self.to_s
          "Benny/#{ns}"
       end
-
 
     end
   end

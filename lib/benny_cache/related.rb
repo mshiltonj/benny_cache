@@ -1,6 +1,6 @@
 module BennyCache
   module Related
-    def self.included(base)
+    def self.included(base) #:nodoc:
       base.send :include, BennyCache::Base
 
       base.extend BennyCache::ClassMethods
