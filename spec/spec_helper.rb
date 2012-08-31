@@ -15,6 +15,7 @@ if ENV['COVERAGE']
   SimpleCov.start :gem
 end
 
+require 'rubygems'
 require_relative '../lib/benny_cache'
 require_relative "./test_classes"
 

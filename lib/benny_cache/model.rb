@@ -32,7 +32,13 @@ module BennyCache
 
         BennyCache::Config.store.delete(key)
         self.class.class_variable_get(:@@BENNY_MODEL_INDEXES).each do |idx|
-          key =  "#{ns}/" + idx.to_s.gsub(/:(\w+)/) { self.send($1) }
+
+          if idx.is_a?(Symbol)
+            key =  "#{ns}/#{idx}/" + idx.to_s.gsub(/(\w+)/) { self.send($1) }
+          elsif idx.is_a?(String)
+            key =  "#{ns}/" +  idx.to_s.gsub(/:(\w+)/) { "#{self.send($1) }" }
+          end
+
           BennyCache::Config.store.delete(key)
         end
       end
@@ -82,11 +88,6 @@ module BennyCache
           key = key.join('/')
 
           key_format = key_format.join('/')
-
-          puts "--------"
-          puts self.class_variable_get(:@@BENNY_MODEL_INDEXES).inspect
-          puts key_format.inspect
-          puts "--------"
 
           raise "undefined cache key format #{ns}/#{key_format}" unless self.class_variable_get(:@@BENNY_MODEL_INDEXES).include?(key_format)
 

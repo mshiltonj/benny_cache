@@ -1,13 +1,13 @@
 class ARFaker
 
   def save
-    self.class_variable_get(:@@after_save_callbacks).each do |cb|
+    self.class.class_variable_get(:@@after_save_callbacks).each do |cb|
       self.send(cb)
     end
   end
 
   def destroy
-    self.class_variable_get(:@@after_destroy_callbacks).each do |cb|
+    self.class.class_variable_get(:@@after_destroy_callbacks).each do |cb|
       self.send(cb)
     end
   end
@@ -33,10 +33,22 @@ end
 class ModelCacheFake < ARFaker
   include BennyCache::Model
 
-  attr_accessor :id, :other_id
+  attr_accessor :id, :other_id, :x, :y
 
   benny_model_index :other_id, [:x, :y]
   benny_data_index :stuff
+
+  def stuff
+    [:stuff1, :stuff2]
+  end
+end
+
+class ModelCacheFakeWithNs < ARFaker
+  include BennyCache::Model
+  benny_model_ns :custom_ns
+
+  attr_accessor :id, :other_id
+
 
 end
 
