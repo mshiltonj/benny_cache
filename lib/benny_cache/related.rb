@@ -31,7 +31,6 @@ module BennyCache
   module ClassMethods
 
     def benny_related_index(*options)
-      puts "** benny_related_index"
       index_keys = options.map {|idx| idx.is_a?(Array) ? idx.map{ |jdx| "#{jdx.to_s}/:#{jdx.to_s}"}.join("/") : idx }
       self.class_variable_get(:@@benny_related_indexes).push(*index_keys)
     end

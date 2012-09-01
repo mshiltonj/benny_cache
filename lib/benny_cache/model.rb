@@ -94,7 +94,13 @@ module BennyCache
       #  end
 
       def benny_model_index(*options)
-        index_keys = options.map {|idx| idx.is_a?(Array) ? idx.map{ |jdx| "#{jdx.to_s}/:#{jdx.to_s}"}.join("/") : idx }
+        index_keys = options.map do |idx|
+          if idx.is_a?(Array)
+              idx.map{ |jdx| "#{jdx.to_s}/:#{jdx.to_s}"}.join("/")
+          else
+             "#{idx.to_s}/:#{idx.to_s}"
+          end
+        end
         self.class_variable_get(:@@BENNY_MODEL_INDEXES).push(*index_keys)
       end
 

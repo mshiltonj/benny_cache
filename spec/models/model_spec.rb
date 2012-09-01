@@ -11,16 +11,25 @@ describe BennyCache::Model do
     before(:each) do
       @model = ModelCacheFake.new
       @model.id = 1
+      @model.other_id = 123
       @model.x = 12
       @model.y = 36
       @store = BennyCache::Cache.new
       BennyCache::Config.store=@store
     end
 
-    it "should fetch a model by id from cache with a block" do
+    it "should fetch a model by id from cache" do
       ModelCacheFake.expects(:find).with(1).returns(@model)
 
       rv = ModelCacheFake.benny_model_cache(1)
+      rv.id.should == 1
+    end
+
+    it "should fetch a model by a lookup hash from cache" do
+      arel= Object.new
+      ModelCacheFake.expects(:where).with(:other_id => 123).returns(arel)
+      arel.expects(:first).returns(@model)
+      rv = ModelCacheFake.benny_model_cache(:other_id => 123)
       rv.id.should == 1
     end
 
