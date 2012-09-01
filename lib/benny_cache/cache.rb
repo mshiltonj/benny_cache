@@ -4,7 +4,7 @@ module BennyCache
       @cache = {}
     end
 
-    def fetch(key, &block)
+    def fetch(key, options = nil, &block)
       val = @cache[key]
 
       if val.nil? && block_given?
@@ -14,20 +14,20 @@ module BennyCache
       val
     end
 
-    def read(key)
+    def read(key, options = nil)
       @cache[key]
     end
 
-    def write(key, val)
+    def write(key, val, options = nil)
       @cache[key] = val
       return true
     end
 
-    def delete(key)
+    def delete(key, options = nil)
       @cache.delete(key)
     end
 
-    def clear
+    def clear(options = nil)
       @cache = {}
     end
 
