@@ -41,6 +41,11 @@ class ModelCacheFake < ARFaker
   def stuff
     [:stuff1, :stuff2]
   end
+
+  def method_to_cache(*options)
+    return options
+  end
+  benny_method_index :method_to_cache
 end
 
 class ModelCacheFakeWithNs < ARFaker
@@ -48,13 +53,13 @@ class ModelCacheFakeWithNs < ARFaker
   benny_model_ns :custom_ns
 
   attr_accessor :id, :other_id
-
-
 end
 
 class RelatedCacheFake < ARFaker
   include BennyCache::Related
   benny_related_index ":model_id/ModelCacheFake/stuff"
+
+  benny_related_method ":model_id/ModelCacheFake/method_to_cache"
 
   attr_accessor :model_id
 

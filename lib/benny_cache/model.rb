@@ -1,3 +1,5 @@
+require 'digest/sha1'
+
 module BennyCache
   module Model
 
@@ -14,6 +16,10 @@ module BennyCache
 
       unless base.class_variable_defined? :@@BENNY_DATA_INDEXES
         base.class_variable_set(:@@BENNY_DATA_INDEXES, [])
+      end
+
+      unless base.class_variable_defined? :@@BENNY_METHOD_INDEXES
+        base.class_variable_set(:@@BENNY_METHOD_INDEXES, [])
       end
 
       if base.respond_to? :after_save
@@ -55,7 +61,12 @@ module BennyCache
       # Clear the a data cache from a given model
       def benny_data_cache_delete(model_id, data_index)
         full_index = self.benny_data_cache_full_index(model_id, data_index)
-        puts "deleting full index key  #{full_index}"
+        BennyCache::Config.store.delete(full_index)
+      end
+
+      # Clear the a method cache from a given model
+      def benny_method_cache_delete(model_id, data_index)
+        full_index = self.benny_method_cache_full_index(model_id, data_index)
         BennyCache::Config.store.delete(full_index)
       end
 
@@ -63,6 +74,38 @@ module BennyCache
         raise "undefined cache data key '#{data_index}'" unless self.class_variable_get(:@@BENNY_DATA_INDEXES).include?(data_index.to_s)
         ns = self.get_benny_model_ns
         full_index = "#{ns}/#{model_id}/data/#{data_index.to_s}"
+      end
+
+      def benny_method_cache_full_index(model_id, method_index) # :nodoc:
+        raise "undefined cache method key '#{method_index}'" unless self.class_variable_get(:@@BENNY_METHOD_INDEXES).include?(method_index.to_s)
+        ns = self.get_benny_model_ns
+        full_index = "#{ns}/#{model_id}/method/#{method_index.to_s}"
+      end
+
+      # For each benny cached method, we store an array cached results. Each result
+      # is unique to the parameters used during the method call.
+      # Meaning: foo.bar(:baz) and foo.bar(:bin) are stored as two separate
+      # results, with their own key in the benny cache. Additionally,
+      # these various keys associated with foo.bar are stored as an
+      # separate array in their own cache entry.
+      # When it's time to clear the all the foo.bar cached results, we will
+      # have an array of keys to reference.
+      def benny_method_store_method_args_index(base_method_index, args_method_index)
+        method_sig_ary = BennyCache::Config.store.fetch(base_method_index) { [] }
+        unless method_sig_ary.include?(args_method_index)
+          method_sig_ary.push(args_method_index)
+          BennyCache::Config.store.write(base_method_index, method_sig_ary)
+        end
+      end
+
+      def benny_method_store_method_args_indexes_delete(model_id, method_name)
+        base_method_index = self.benny_method_cache_full_index(model_id, method_name)
+
+        method_sig_ary = BennyCache::Config.store.fetch(base_method_index) { [] }
+        method_sig_ary.each do |args_method_index|
+          BennyCache::Config.store.clear(args_method_index)
+        end
+        BennyCache::Config.store.clear(base_method_index)
       end
 
       ##
@@ -106,6 +149,56 @@ module BennyCache
 
       def benny_data_index(*options)
         self.class_variable_get(:@@BENNY_DATA_INDEXES).push(*(options.map(&:to_s)))
+      end
+
+      def benny_method_args_sig(*options)
+        sig =  ''
+        options.each { |arg|
+            if arg.respond_to?(:id)
+              sig += "#{arg.class}/##{arg.id}"
+            elsif arg.is_a?(Array)
+              arg.each do |val|
+                sig += benny_method_args_sig(*val)
+              end
+            elsif arg.is_a?(Hash)
+              arg.keys.sort.each do |key|
+                sig += benny_method_args_sig(key)  + benny_method_args_sig(*(arg[key]))
+              end
+            else
+              sig += Digest::SHA1.hexdigest(Marshal.dump(arg))
+            end
+        }
+        sig
+      end
+
+      def benny_method_index(*options)
+        self.class_variable_get(:@@BENNY_METHOD_INDEXES).push(*(options.map(&:to_s)))
+
+        options.each do |method_name|
+
+          define_method "#{method_name}_with_benny_cache" do |*method_opts|
+            puts "benny cache method: #{method_name}_with_benny_cache  #{method_opts.inspect}"
+
+            model_id = self.id
+            base_method_index = self.class.benny_method_cache_full_index(model_id, method_name)
+
+            sig = self.class.benny_method_args_sig(*method_opts)
+
+            args_method_index = "#{base_method_index}/args/#{sig}"
+
+            self.class.benny_method_store_method_args_index(base_method_index, args_method_index)
+
+            BennyCache::Config.store.fetch(args_method_index) {
+              self.send("#{method_name}_without_benny_cache", *method_opts)
+            }
+
+          end
+          alias_method "#{method_name}_without_benny_cache", method_name
+          alias_method method_name, "#{method_name}_with_benny_cache"
+          alias_method "#{method_name}!", "#{method_name}_without_benny_cache"
+
+        end
+
       end
 
       ##
