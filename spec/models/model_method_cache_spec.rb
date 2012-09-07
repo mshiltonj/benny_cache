@@ -59,6 +59,18 @@ describe BennyCache::Model do
       rv.should be_nil
     end
 
+    it "should use the same cache index for reorder hash params" do
+      @model.expects(:method_to_cache_without_benny_cache).returns(:stuff) # only once!
+
+      rv = @model.method_to_cache :foo => :bar, :baz => :bin
+      rv.should == :stuff
+      rv = @model.method_to_cache :baz => :bin, :foo => :bar # should use same key
+      rv.should == :stuff
+      model_base_index = "Benny/ModelCacheFake/1/method/method_to_cache"
+      rv = BennyCache::Config.store.read(model_base_index)
+      rv.size.should == 1
+    end
+
   end
 
 end

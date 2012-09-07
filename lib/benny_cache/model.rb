@@ -31,10 +31,8 @@ module BennyCache
       end
 
       def benny_model_cache_delete
-        puts "benny_model_cache_delete"
         ns = self.class.get_benny_model_ns
         key = "#{ns}/#{self.id}"
-        puts "deleting key #{key}"
 
         BennyCache::Config.store.delete(key)
         self.class.class_variable_get(:@@BENNY_MODEL_INDEXES).each do |idx|
@@ -177,7 +175,7 @@ module BennyCache
         options.each do |method_name|
 
           define_method "#{method_name}_with_benny_cache" do |*method_opts|
-            puts "benny cache method: #{method_name}_with_benny_cache  #{method_opts.inspect}"
+            #puts "benny cache method: #{method_name}_with_benny_cache  #{method_opts.inspect}"
 
             model_id = self.id
             base_method_index = self.class.benny_method_cache_full_index(model_id, method_name)
