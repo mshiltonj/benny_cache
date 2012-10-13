@@ -11,15 +11,24 @@ module BennyCache
         val = block.call()
         @cache[key] = val
       end
+
+      begin
+        val = val.dup unless val.nil?
+      rescue TypeError
+        #okay
+      end
       val
+
     end
 
     def read(key, options = nil)
-      @cache[key]
+      val = @cache[key]
+      val = val.dup unless val.nil?
+
     end
 
     def write(key, val, options = nil)
-      @cache[key] = val
+      @cache[key] = val.dup
       return true
     end
 
