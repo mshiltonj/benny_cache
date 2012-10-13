@@ -42,10 +42,15 @@ class ModelCacheFake < ARFaker
     [:stuff1, :stuff2]
   end
 
+  def method_to_cache_with_base_data
+    [:a, :b, :c]
+  end
+
   def method_to_cache(*options)
     return options
   end
-  benny_method_index :method_to_cache
+  benny_method_index :method_to_cache, :method_to_cache_with_base_data
+
 end
 
 class ModelCacheFakeWithNs < ARFaker

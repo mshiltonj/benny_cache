@@ -175,6 +175,7 @@ module BennyCache
         options.each do |method_name|
 
           define_method "#{method_name}_with_benny_cache" do |*method_opts|
+            @_benny_method_local_cache ||= {}
             #puts "benny cache method: #{method_name}_with_benny_cache  #{method_opts.inspect}"
 
             model_id = self.id
@@ -186,9 +187,14 @@ module BennyCache
 
             self.class.benny_method_store_method_args_index(base_method_index, args_method_index)
 
-            BennyCache::Config.store.fetch(args_method_index) {
+            return @_benny_method_local_cache[args_method_index] if @_benny_method_local_cache[args_method_index]
+
+            return_data = BennyCache::Config.store.fetch(args_method_index) {
               self.send("#{method_name}_without_benny_cache", *method_opts)
             }
+
+            @_benny_method_local_cache[args_method_index] = return_data
+            return_data
 
           end
           alias_method "#{method_name}_without_benny_cache", method_name

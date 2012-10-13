@@ -40,6 +40,15 @@ describe BennyCache::Model do
       puts rv.inspect
     end
 
+    it "should method cache result data structures locally" do
+      data = @model.method_to_cache_with_base_data
+      data.should == [:a, :b, :c]
+      data.push :d
+
+      @model.method_to_cache_with_base_data.should == [:a, :b, :c, :d]
+
+    end
+
 
     it "should be able to delete the cached method data" do
       @model.expects(:method_to_cache_without_benny_cache).with(:foo).returns(:stuff) # only once!
