@@ -42,8 +42,8 @@ By default, BennyCache uses Rails.cache store if available. You can explicitly s
 The cache is expected to support the `#read`, `#write`, `#delete` and `#fetch` methods of the
 ActiveSuport::Cache::Store interface.
 
-If Rails.cache is not defined, and you don\'t explicitly initialize a cache, BennyCache uses an internal
-`BennyCache::Cache` object, which is just an in-memory key-value hash. Don\'t use it.
+If Rails.cache is not defined, and you don't explicitly initialize a cache, BennyCache uses an internal
+`BennyCache::Cache` object, which is just an in-memory key-value hash. Don't use it.
 
 
 ### Model Indexes
