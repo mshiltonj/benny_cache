@@ -20,7 +20,7 @@ internal memory cache by default. The internal memory cache is meaning for testi
 
 * [CacheMoney](https://github.com/nkallen/cache-money)
 
-* [CacheMethod] (https://github.com/seamusabshere/cache_method)
+* [CacheMethod](https://github.com/seamusabshere/cache_method)
 
 __Differences__
 
@@ -163,7 +163,7 @@ cached value is based on the method index and the args hash sig. In the followin
     rv1 = agent.method_name :foo
     rv2 = agent.method_name :bar
 
-If agent#mehtod_name is declared as a method_index, rv1 and and rv2 will be two different cached values.
+If agent#method_name is declared as a method_index, rv1 and and rv2 will be two different cached values.
 
 When a BennyCache method index is called, benny cache keeps an in-process mode-specific copy of the cache,
 so multiple calls to the same method with the same args will return the same object with the same object_id.
@@ -178,22 +178,27 @@ This supports in process updates to the data.  For example:
 
 This behavior works for my needs, but may not suit all users. I may add the ability to change this behavior.
 
-#### Clearing model index cache
-While method index will cache data on per-args_hash basis, clearing the cache for a model index is more a shotgun
-approach: clearing a model index cache will clear _all_ cached data for all args hashes.
-
-To manually clear a method index cache for a model, you do not need to instantiate the model. You need the primary key
-of the model, the method name, and use a class method:
-
-    MyModel.benny_model_cache_delete(123, :method_name)
-
-However, if changes to one model might need to invalidate the data caches of another mother, this can be managed
-with the `BennyCache::Related` mixin.
-
 I have not fully tested the benny_method_index functionality with all of the ActiveRelation's varied functionality.
 Using the two together and exercising different parts of ActiveRelation may have unexpected results. However, in my
 simple case, where I use basis :has_many relationships and don't use #where, #include, etc, it works the way I need
 it to work.
+
+While simple use cases should work without issue, passing complex data structures to cached methods may
+confuse BennyCache. For more robust method caching, checkout out [CacheMethod](https://github.com/seamusabshere/cache_method).
+
+
+#### Clearing model index cache
+While method index will cache data on per-args_hash basis, clearing the cache for a model index is more a shotgun
+approach: clearing a model index cache will clear _all_ cached data for all args hashes.
+
+To manually clear a method index cache for a model, you need the primary key of the model, the method name, and use a
+class method. You do not need to instantiate the model
+
+    MyModel.benny_method_cache_delete(123, :method_name)
+
+However, if changes to one model might need to invalidate the data caches of another mother, this can be managed
+with the `BennyCache::Related` mixin.
+
 
 
 ### Related Indexes
@@ -213,7 +218,7 @@ uses BennyCache::Related that defines a benny_related_index that points to the m
       include BennyCache::Model
 
       benny_data_index :my_related_items  # data cache
-      benny_model_index :my_related_mehod # method cache
+      benny_model_index :my_related_method # method cache
 
     end
 
