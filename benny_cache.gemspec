@@ -6,7 +6,7 @@ Gem::Specification.new do |gem|
   gem.email         = ["mshiltonj@gmail.com"]
   gem.description   = %q{A model caching library with indirect cached clearing}
   gem.summary       = %q{A model caching library with indirect cached clearing}
-  gem.homepage      = ""
+  gem.homepage      = "https://github.com/mshiltonj/benny_cache"
 
   gem.files         = `git ls-files`.split($\)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
