@@ -4,10 +4,11 @@ BennyCache is a model caching library that uses the ActiveRecord API, but does n
 ActiveRecord. The main motivation for creating BennyCache was to make it possible to implicitly clear the cache 
 of one record when a change to another related record is made, without having the instantiate both objects.
 
-For example, suppose an Agent has a set of Items in its Inventory. If an agent's data is populated in the cache,
-we want to make a change to one of the agent's items in isolation, without loading the Agent object,
-and have that change automatically clear the agent's inventory from the cache, so the full inventory will
-be refreshed on the next cache request.
+For example, suppose an Agent has a set of Items in its Inventory. We have an agent's data is populated in the cache,
+and we want to change the agent's inventory, either add a new item, or update the remaining ammo of a weapon.
+With BennyCache, we can update an individual Item and the Agent's inventory cache is cleared. We do not have
+to load the agent into memory, and the agent's basic information remains unchanged in the cache -- only the Inventory
+data for that Agent is flushed.
 
 BennyCache uses Rails.cache if available, or you can provide your own caching engine. Otherwise, it uses an 
 internal memory cache by default. The internal memory cache is meaning for testing and evaluation purposes only.
