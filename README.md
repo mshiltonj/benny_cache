@@ -17,20 +17,21 @@ internal memory cache by default. The internal memory cache is meaning for testi
 ### Contrasting BennyCache with other similar caching tools:
 
 * CacheFu
-** https://github.com/defunkt/cache_fu
-** https://github.com/kreetitech/cache_fu (rails 3 fork)
+- https://github.com/defunkt/cache_fu
+- https://github.com/kreetitech/cache_fu (rails 3 fork)
 
 * CacheMoney
-** https://github.com/nkallen/cache-money
+- https://github.com/nkallen/cache-money
 
 * CacheMethod
-* https://github.com/seamusabshere/cache_method
+- https://github.com/seamusabshere/cache_method
 
 __Differences__
-* BennyCache is marginally aware of ActiveRecord, but doesn't touch the internals, so it should be
+
+- BennyCache is marginally aware of ActiveRecord, but doesn't touch the internals, so it should be
 forward-compatible, or as much as it can be.
-* Usage of BennyCache is explicit: It doesn't try to do hide itself from the code.
-* Method caching in BennyCache was a bit inspired by CacheMethod. CacheMethod is a more robust solution for method
+- Usage of BennyCache is explicit: It doesn't try to do hide itself from the code.
+- Method caching in BennyCache was a bit inspired by CacheMethod. CacheMethod is a more robust solution for method
 caching, especially if you are passing complex data structures as parameters to your methods.
 
 ## Installation
