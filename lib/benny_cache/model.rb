@@ -65,7 +65,16 @@ module BennyCache
       # Clear the a method cache from a given model
       def benny_method_cache_delete(model_id, data_index)
         full_index = self.benny_method_cache_full_index(model_id, data_index)
+
+        keys = BennyCache::Config.store.fetch(full_index)
+
+        unless (keys.nil?  || keys.empty?)
+          keys.each do |key|
+            BennyCache::Config.store.delete(key)
+          end
+        end
         BennyCache::Config.store.delete(full_index)
+
       end
 
       def benny_data_cache_full_index(model_id, data_index) # :nodoc:
