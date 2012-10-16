@@ -269,7 +269,11 @@ By declaring the above namespace, these two calls reference the same key:
 
 ## Bugs
 
-There are probably bugs. Until there is an issue tracking system, send email to
+There are probably bugs. You can report them using the githhub [BennyCache Issue Tracker](https://github.com/mshiltonj/benny_cache/issues.
+
+
+
+Until there is an issue tracking system, send email to
 `mshiltonj@gmail.com` and put 'BennyCache' in the subject.
 
 ## Contributing
